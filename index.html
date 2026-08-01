@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Formula ❤️</title>
+    <style>
+        :root {
+            --bg-color: #0d1117; /* Very dark blue/black */
+            --accent-main: #61dafb; /* React/Physics light blue */
+            --heart-color: #f87171; /* Soft red/pink */
+            --text-main: #c9d1d9;
+            --text-sub: #8b949e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden; /* Prevent scrolling during animation */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- Intro Section (The Equation) --- */
+        #intro-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            opacity: 1;
+            transition: opacity 2s ease-in-out;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .equation {
+            font-family: "Courier New", Courier, monospace; /* Monospace for math look */
+            font-size: 2.5rem;
+            color: var(--accent-main);
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(97, 218, 251, 0.5);
+        }
+
+        .intro-text {
+            color: var(--text-sub);
+            font-size: 1.1rem;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out forwards 1.5s; /* Delay fade-in */
+        }
+
+        /* --- Canvas Section (The Drawing) --- */
+        #main-container {
+            position: relative;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            border: 1px solid rgba(255, 255, 255, 0.03); /* Subtle border for definition */
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(248, 113, 113, 0.1); /* Subtle heart glow */
+        }
+
+        .final-message {
+            margin-top: 30px;
+            color: var(--text-main);
+            font-size: 1.3rem;
+            font-weight: 500;
+            opacity: 0;
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.5;
+            padding: 0 20px;
+        }
+
+        /* --- Animations & Utilities --- */
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 1.5s ease-in-out forwards;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- SECTION 1: THE INTRO EQUATION -->
+    <div id="intro-container">
+        <div class="equation">
+            <i>e</i><sup><i>iπ</i></sup> + 1 = 0
+        </div>
+        <p class="intro-text">Euler's Identity: Pure elegant logic.</p>
+    </div>
+
+    <!-- SECTION 2: THE HEART CANVAS -->
+    <div id="main-container">
+        <!-- We use 600x600 for a decent resolution on screens -->
+        <canvas id="heartCanvas" width="600" height="600"></canvas>
+        <p class="final-message" id="endText">
+            Some things don't need an equation to make sense. <br>
+            Love you, man.
+        </p>
+    </div>
+
+    <script>
+        // --- Setup & Configuration ---
+        const introContainer = document.getElementById('intro-container');
+        const mainContainer = document.getElementById('main-container');
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getcontext('2d');
+        const endText = document.getElementById('endText');
+
+        // Dynamic adjustment for small screens (mobiles)
+        const dpr = window.devicePixelRatio || 1;
+        const displaySize = Math.min(window.innerWidth - 40, window.innerHeight - 150, 600);
+        canvas.style.width = displaySize + 'px';
+        canvas.style.height = displaySize + 'px';
+        canvas.width = displaySize * dpr;
+        canvas.height = displaySize * dpr;
+        ctx.scale(dpr, dpr);
+
+        const width = displaySize;
+        const height = displaySize;
+        ctx.strokeStyle = '#f87171'; // var(--heart-color)
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round'; // Smooths the line ends
+
+        // --- Core Animation Flow ---
+
+        // 1. Initial State: Fade out equation after 4 seconds
+        setTimeout(() => {
+            introContainer.style.opacity = '0';
+        }, 4000);
+
+        // 2. Transition State: Show canvas and start drawing
+        setTimeout(() => {
+            introContainer.style.display = 'none';
+            mainContainer.style.opacity = '1';
+            mainContainer.style.display = 'flex';
+            startHeartDrawing();
+        }, 6000); // Wait for intro fade-out
+
+        // --- Math & Drawing Functions ---
+
+        function startHeartDrawing() {
+            // center the coordinate system (0,0 is now center of canvas)
+            ctx.translate(width / 2, height / 2);
+
+            let t = 0; // t is our variable (the angle)
+            const speed = 0.015; // Controls drawing speed
+            const scale = 13;   // Controls how big the heart is
+
+            function drawStep() {
+                // The Heart Parametric Equation:
+                // x = 16 * sin^3(t)
+                // y = 13 * cos(t) - 5 * cos(2t) - 2 * cos(3t) - cos(4t)
+
+                // Calculate next x, y based on t
+                const x = 16 * Math.pow(Math.sin(t), 3) * scale;
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * scale;
+
+                // We negate y because canvas y-coordinates go down,
+                // but math y-coordinates go up.
+
+                if (t === 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y); // Start point
+                } else {
+                    ctx.lineTo(x, y); // Draw line to next point
+                    ctx.stroke();
+                }
+
+                t += speed;
+
+                // A full heart curve is drawn from t = 0 to t = 2*PI
+                if (t <= 2 * Math.PI) {
+                    requestAnimationFrame(drawStep); // Keep drawing
+                } else {
+                    // Animation complete: show final message
+                    endText.classList.add('fade-in');
+                }
+            }
+
+            drawStep(); // Start the recursion
+        }
+    </script>
+</body>
+</html>
