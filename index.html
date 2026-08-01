@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+            <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,9 +6,8 @@
     <title>The Formula ❤️</title>
     <style>
         :root {
-            --bg-color: #0d1117;
-            --accent-main: #61dafb;
-            --heart-color: #f87171;
+            --bg-color: #0d1117; /* Very dark background */
+            --accent-math: #61dafb; /* Light blue equation */
             --text-main: #c9d1d9;
             --text-sub: #8b949e;
         }
@@ -27,6 +26,7 @@
             width: 100vw;
         }
 
+        /* --- Intro Section (Equation) --- */
         #intro-container {
             display: flex;
             flex-direction: column;
@@ -42,7 +42,7 @@
         .equation {
             font-family: "Courier New", Courier, monospace;
             font-size: 2.2rem;
-            color: var(--accent-main);
+            color: var(--accent-math);
             font-weight: bold;
             margin-bottom: 15px;
             letter-spacing: 2px;
@@ -54,6 +54,7 @@
             font-size: 1rem;
         }
 
+        /* --- Main Section (Canvas & Message) --- */
         #main-container {
             position: relative;
             opacity: 0;
@@ -62,6 +63,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            visibility: hidden; /* Prevent flickering */
         }
 
         canvas {
@@ -69,25 +71,28 @@
         }
 
         .final-message {
-            margin-top: 20px;
+            margin-top: 25px;
             color: var(--text-main);
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 500;
             opacity: 0;
             transition: opacity 1.5s ease-in-out;
             text-align: center;
-            max-width: 350px;
-            line-height: 1.5;
+            max-width: 380px;
+            line-height: 1.6;
             padding: 0 20px;
         }
 
+        /* Utility classes */
         .show {
             opacity: 1 !important;
+            visibility: visible !important;
         }
     </style>
 </head>
 <body>
 
+    <!-- 1. The Math Equation Intro -->
     <div id="intro-container">
         <div class="equation">
             <i>e</i><sup><i>iπ</i></sup> + 1 = 0
@@ -95,74 +100,117 @@
         <p class="intro-text">Euler's Identity: Pure elegant logic.</p>
     </div>
 
+    <!-- 2. The Animation & Final Message -->
     <div id="main-container">
         <canvas id="heartCanvas"></canvas>
+        
+        <!-- 
+           YOUR MSG HERE (Sounds like you, real and no fluff)
+           You can edit this text right here if you want to.
+        -->
         <p class="final-message" id="endText">
-            Some things don't need an equation to make sense. <br><br>
-            Love you, man.
+            Yesterday was completely messed up at the hospital, but even in that room, I was thinking about you the whole time.
+            <br><br>
+            Made this from scratch late last night. Happy GF Day. 
+            <br>
+            <span style="color:var(--text-sub); font-size: 0.95rem;">(I'll make up for the date properly later.)</span>
         </p>
     </div>
 
     <script>
+        // --- Configuration & Initialization ---
         const introContainer = document.getElementById('intro-container');
         const mainContainer = document.getElementById('main-container');
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
         const endText = document.getElementById('endText');
 
-        // Dynamic sizing for mobile screen
-        const displaySize = Math.min(window.innerWidth - 40, 350);
+        // Match your colors list from the Python Turtle script
+        const colors = ["red", "blue", "lime", "yellow", "cyan", "magenta", "orange", "pink"];
+
+        // Responsive sizing for mobile screens (Max size 380px)
+        const displaySize = Math.min(window.innerWidth - 30, 380);
         canvas.width = displaySize;
         canvas.height = displaySize;
 
-        ctx.strokeStyle = '#f87171';
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
+        // --- Core Animation Flow ---
 
-        // 1. Fade out equation after 3 seconds
+        // 1. Initial State: Fade out equation after 3 seconds
         setTimeout(() => {
             introContainer.style.opacity = '0';
         }, 3000);
 
-        // 2. Hide intro, show canvas, start drawing heart
+        // 2. Transition: Hide equation, show main layout, start drawing
         setTimeout(() => {
             introContainer.style.display = 'none';
             mainContainer.classList.add('show');
-            startHeartDrawing();
-        }, 4500);
+            startColorfulHeartDrawing();
+        }, 4500); // 3s delay + 1.5s fade-out
 
-        function startHeartDrawing() {
+
+        // --- The Starburst Heart Drawing Function ---
+
+        function startColorfulHeartDrawing() {
+            // Recenter origin (0,0 is center of canvas)
             ctx.translate(displaySize / 2, displaySize / 2);
 
-            let t = 0;
-            const speed = 0.03; 
-            const scale = displaySize / 32; 
+            let i = 0;
+            const totalSteps = 120; // Matches your loop
+            const speedDelay = 35;   // Milliseconds delay between points (slow enough to be cool)
+            const scale = displaySize / 35; // Controls relative size
 
             function drawStep() {
-                const x = 16 * Math.pow(Math.sin(t), 3) * scale;
-                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * scale;
-
-                if (t === 0) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
-                }
-
-                t += speed;
-
-                if (t <= 2 * Math.PI) {
-                    requestAnimationFrame(drawStep);
-                } else {
-                    // Show final text when heart finishes drawing
+                // If the loop (i) is done, show final message
+                if (i >= totalSteps) {
                     endText.classList.add('show');
+                    return; 
                 }
+
+                // 1. Clear previous point's line (emulates jumping back to center)
+                // We don't clear the whole canvas, just the drawing layer.
+                ctx.clearRect(-displaySize/2, -displaySize/2, displaySize, displaySize);
+
+                // 2. Calculate coordinates (The Parametric Heart Equation)
+                const angle = i * (Math.PI * 2) / totalSteps;
+                const x = 16 * Math.pow(Math.sin(angle), 3) * scale;
+                const y = -(13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * scale;
+
+                // 3. Select random color
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+
+                // 4. Draw the line from center (0,0) to the point (x,y)
+                ctx.beginPath();
+                ctx.moveTo(0, 0); // Jumps to center (penup() and goto(0,0))
+                ctx.lineTo(x, y); // Draw line to point (pendown() and goto(x,y))
+                ctx.stroke();
+
+                // 5. Draw the tiny Starburst effect at (x,y) (Matches the nested Python loop)
+                const bursts = 8;
+                const burstRadius = 6 * (displaySize / 380); // Small relative burst
+                
+                // Save coordinates because it will rotate relative to (x,y)
+                ctx.save();
+                ctx.translate(x, y); // Make (x,y) the relative center for the burst
+                
+                for (let b = 0; b < bursts; b++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(burstRadius, 0); // Draws a line outward
+                    ctx.stroke();
+                    ctx.rotate((45 * Math.PI) / 180); // Rotate 45 degrees
+                }
+                ctx.restore(); // Restore back to global center-coordinate system
+
+                i++;
+                // Wait, then draw the next point
+                setTimeout(drawStep, speedDelay);
             }
 
-            drawStep();
+            drawStep(); // Initial call
         }
     </script>
 </body>
 </html>
-
